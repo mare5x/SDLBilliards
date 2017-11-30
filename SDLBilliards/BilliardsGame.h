@@ -3,6 +3,11 @@
 #include "glad\glad.h"
 #include "Shader.h"
 
+#include <array>
+
+#include "Ball.h"
+#include "BallSpriteRenderer.h"
+
 class BilliardsGame {
 public:
 	BilliardsGame(int w, int h);
@@ -18,7 +23,17 @@ private:
 	bool init_gl();
 	void quit();
 
+	void render_table();
+	void render_balls();
+
+	void update_ball_positions();
+	void reset_balls();
+
 	void handle_input(SDL_Event &e);
+
+	// Game variables
+	std::array<Ball, 16> balls;
+	std::array<float, 16 * 2> ball_positions;  // in normalized device space
 
 	// Window variables
 	int width, height;
@@ -32,4 +47,7 @@ private:
 	// OpenGL stuff
 	GLuint vao, vbo;
 	Shader bg_shader;
+	glm::mat4 projection;  // orthographic projection matrix
+
+	BallSpriteRenderer ball_renderer;
 };

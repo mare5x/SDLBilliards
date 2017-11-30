@@ -116,16 +116,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ball.cpp" />
+    <ClCompile Include="BallSpriteRenderer.cpp" />
     <ClCompile Include="BilliardsGame.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ball.h" />
+    <ClInclude Include="BallSpriteRenderer.h" />
     <ClInclude Include="BilliardsGame.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\ball_frag.fs" />
+    <None Include="Shaders\ball_vert.vs" />
     <None Include="Shaders\bg_frag.fs" />
+    <None Include="Shaders\bg_vert.vs" />
     <None Include="Shaders\frag_shader.fs" />
     <None Include="Shaders\vert_shader.vs" />
   </ItemGroup>

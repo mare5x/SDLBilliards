@@ -24,6 +24,12 @@
     <ClCompile Include="glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BallSpriteRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Ball.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BilliardsGame.h">
@@ -32,10 +38,19 @@
     <ClInclude Include="Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Ball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BallSpriteRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\frag_shader.fs" />
     <None Include="Shaders\vert_shader.vs" />
     <None Include="Shaders\bg_frag.fs" />
+    <None Include="Shaders\ball_frag.fs" />
+    <None Include="Shaders\ball_vert.vs" />
+    <None Include="Shaders\bg_vert.vs" />
   </ItemGroup>
 </Project>

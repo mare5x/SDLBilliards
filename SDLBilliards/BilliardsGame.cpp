@@ -1,9 +1,14 @@
 #include "BilliardsGame.h"
 
+#include "glm/gtc/matrix_transform.hpp"
+
+
 BilliardsGame::BilliardsGame(int w, int h) :
+	balls{}, ball_positions{},
 	width(w), height(h), quit_requested(false),
 	sdl_event(), window(nullptr), gl_context(),
-	vao(0), vbo(0), bg_shader()
+	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, 2.0f, 4.0f, 0.0f, -1.0f, 1.0f)),
+	ball_renderer()
 {
 	if (!init())
 		quit();
@@ -40,11 +45,9 @@ void BilliardsGame::render()
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	bg_shader.use();
+	render_table();
 
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	render_balls();
 
 	SDL_GL_SwapWindow(window);
 }
@@ -84,14 +87,14 @@ bool BilliardsGame::init()
 bool BilliardsGame::init_gl()
 {
 	float vertices[] = {
-		// pos (x, y, z)			
-		-1.0f, 1.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
+		// pos (x, y)			
+		-1.0f, 1.0f,
+		-1.0f, -1.0f,
+		1.0f, -1.0f,
 
-		-1.0f, 1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f
+		-1.0f, 1.0f,
+		1.0f, -1.0f,
+		1.0f, 1.0f
 	};
 
 	glGenVertexArrays(1, &vao);
@@ -102,11 +105,19 @@ bool BilliardsGame::init_gl()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(0));
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0));
 	glEnableVertexAttribArray(0);
 
-	bg_shader = Shader("Shaders/vert_shader.vs", "Shaders/bg_frag.fs");
-	bg_shader.use();
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+
+	bg_shader = Shader("Shaders/bg_vert.vs", "Shaders/bg_frag.fs");
+
+	ball_renderer.init();
+
+	reset_balls();
+	update_ball_positions();
 
 	return true;
 }
@@ -122,6 +133,56 @@ void BilliardsGame::quit()
 	window = nullptr;
 
 	SDL_Quit();
+}
+
+void BilliardsGame::render_table()
+{
+	bg_shader.use();
+
+	glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void BilliardsGame::render_balls()
+{
+	ball_renderer.render_all();
+}
+
+void BilliardsGame::update_ball_positions()
+{
+	for (int i = 0; i < balls.size(); i++) {
+		glm::vec2 pos = projection * balls[i].get_model_pos();
+		printf("%f %f\n", pos.x, pos.y);
+		ball_positions[i * 2] = pos.x;
+		ball_positions[i * 2 + 1] = pos.y;
+	}
+
+	ball_renderer.update_ball_positions(ball_positions);
+}
+
+void BilliardsGame::reset_balls()
+{
+	// Set the positions to a triangular arrangement.
+	
+	// balls[0] is the white ball
+	balls[0].set_pos(1, 3.75f);
+
+	const float radius = balls[0].radius;
+	const float width = balls[0].width;
+
+	const float spacing = radius / 2.0f;  // spacing between adjacent balls
+
+	float y = 0.5f;
+	int ball_idx = 1;
+	for (int row = 5; row != 0; row--) {
+		float left_x = 1.0f - (row * width + (row - 1) * spacing) / 2.0f + radius;
+		for (int col = 0; col < row; col++) {
+			balls[ball_idx].set_pos(left_x + col * spacing + col * width, y);
+			ball_idx++;
+		}
+		y += width + spacing;
+	}
 }
 
 void BilliardsGame::handle_input(SDL_Event & e)
