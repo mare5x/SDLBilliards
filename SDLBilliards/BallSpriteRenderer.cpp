@@ -1,4 +1,7 @@
 #include "BallSpriteRenderer.h"
+#include "glm/gtc/matrix_transform.hpp"
+#include "Ball.h"
+
 
 BallSpriteRenderer::BallSpriteRenderer()
 	: vao(-1), quad_vbo(-1), ball_positions_vbo(-1),
@@ -33,16 +36,16 @@ void BallSpriteRenderer::update_ball_positions(const std::array<float, 16 * 2>& 
 	glBindVertexArray(0);
 }
 
-void BallSpriteRenderer::init()
+void BallSpriteRenderer::init(const glm::mat4 &projection)
 {
-	float base_ball_position_vertices[] = {
+	float base_ball_position_quad[] = {
 		0, 0,
-		0, 0.05f,
-		0.05f, 0,
+		0, 1.0f,
+		1.0f, 0,
 
-		0, 0.05f,
-		0.05f, 0,
-		0.05f, 0.05f
+		0, 1.0f,
+		1.0f, 0,
+		1.0f, 1.0f
 	};
 
 	glGenVertexArrays(1, &vao);
@@ -51,7 +54,7 @@ void BallSpriteRenderer::init()
 
 	glGenBuffers(1, &quad_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, quad_vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(base_ball_position_vertices), base_ball_position_vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(base_ball_position_quad), base_ball_position_quad, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0));
@@ -71,4 +74,11 @@ void BallSpriteRenderer::init()
 	glBindVertexArray(0);
 
 	shader = Shader("Shaders/ball_vert.vs", "Shaders/ball_frag.fs");
+	shader.use();
+
+	glm::mat4 model(1.0f);
+	model = glm::scale(model, glm::vec3(Ball::width, Ball::width, 1.0f));
+
+	shader.setMat4("projection", projection);
+	shader.setMat4("model", model);
 }

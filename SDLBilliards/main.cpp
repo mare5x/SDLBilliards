@@ -1,7 +1,7 @@
 #include "BilliardsGame.h"
 
-const int WIDTH = 800;
-const int HEIGHT = 600;
+const int WIDTH = 400;
+const int HEIGHT = 800;
 
 
 int main(int argc, char* argv[])

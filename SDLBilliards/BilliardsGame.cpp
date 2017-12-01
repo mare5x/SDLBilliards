@@ -86,7 +86,7 @@ bool BilliardsGame::init()
 
 bool BilliardsGame::init_gl()
 {
-	float vertices[] = {
+	float bg_quad[] = {
 		// pos (x, y)			
 		-1.0f, 1.0f,
 		-1.0f, -1.0f,
@@ -103,7 +103,7 @@ bool BilliardsGame::init_gl()
 	glBindVertexArray(vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(bg_quad), bg_quad, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0));
 	glEnableVertexAttribArray(0);
@@ -114,7 +114,7 @@ bool BilliardsGame::init_gl()
 
 	bg_shader = Shader("Shaders/bg_vert.vs", "Shaders/bg_frag.fs");
 
-	ball_renderer.init();
+	ball_renderer.init(projection);
 
 	reset_balls();
 	update_ball_positions();
@@ -152,10 +152,9 @@ void BilliardsGame::render_balls()
 void BilliardsGame::update_ball_positions()
 {
 	for (int i = 0; i < balls.size(); i++) {
-		glm::vec2 pos = projection * balls[i].get_model_pos();
-		printf("%f %f\n", pos.x, pos.y);
-		ball_positions[i * 2] = pos.x;
-		ball_positions[i * 2 + 1] = pos.y;
+		Ball &ball = balls[i];
+		ball_positions[i * 2] = ball.get_x();
+		ball_positions[i * 2 + 1] = ball.get_y();
 	}
 
 	ball_renderer.update_ball_positions(ball_positions);
@@ -168,8 +167,8 @@ void BilliardsGame::reset_balls()
 	// balls[0] is the white ball
 	balls[0].set_pos(1, 3.75f);
 
-	const float radius = balls[0].radius;
-	const float width = balls[0].width;
+	const float radius = Ball::radius;
+	const float width = Ball::width;
 
 	const float spacing = radius / 2.0f;  // spacing between adjacent balls
 

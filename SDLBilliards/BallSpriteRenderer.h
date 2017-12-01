@@ -13,7 +13,7 @@ public:
 
 	void update_ball_positions(const std::array<float, 16 * 2> &positions);
 
-	void init();
+	void init(const glm::mat4 &projection);
 private:
 	GLuint vao, quad_vbo, ball_positions_vbo;
 

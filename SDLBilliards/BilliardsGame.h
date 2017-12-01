@@ -33,7 +33,7 @@ private:
 
 	// Game variables
 	std::array<Ball, 16> balls;
-	std::array<float, 16 * 2> ball_positions;  // in normalized device space
+	std::array<float, 16 * 2> ball_positions;  // (x, y) of balls in world space
 
 	// Window variables
 	int width, height;
