@@ -33,6 +33,9 @@
     <ClCompile Include="Cue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BilliardsTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BilliardsGame.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Cue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BilliardsTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

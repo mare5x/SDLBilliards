@@ -8,13 +8,13 @@ const float TABLE_HEIGHT = 4.0f;  // meters
 
 const float dt = 0.01;  // fixed time step
 
-const float friction_coefficient = 0.025f; 
+const float friction_coefficient = 0.005f; 
 const float friction_force = Ball::mass * 9.81f * friction_coefficient;
 const float friction_acceleration_scalar = friction_force / Ball::mass;
 
 
 BilliardsGame::BilliardsGame(int w, int h) :
-	balls{}, ball_positions{}, cue(), balls_moving(false),
+	balls{}, ball_positions{}, cue(), table(TABLE_WIDTH, TABLE_HEIGHT), balls_moving(false),
 	width(w), height(h), quit_requested(false),
 	sdl_event(), window(nullptr), gl_context(),
 	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, TABLE_WIDTH, TABLE_HEIGHT, 0.0f, -1.0f, 1.0f)),
@@ -143,7 +143,7 @@ bool BilliardsGame::init_gl()
 	reset_balls();
 	update_ball_positions_vbo();
 
-	cue.set_force({ 1.0f, -50.0f });
+	cue.set_force({ 20.0f, -50.0f });
 	apply_cue_force();
 	balls_moving = true;
 
@@ -181,8 +181,8 @@ void BilliardsGame::update_ball_positions_vbo()
 {
 	for (int i = 0; i < balls.size(); i++) {
 		Ball &ball = balls[i];
-		ball_positions[i * 2] = ball.get_x();
-		ball_positions[i * 2 + 1] = ball.get_y();
+		ball_positions[i * 2] = ball.get_x() - ball.radius;
+		ball_positions[i * 2 + 1] = ball.get_y() - ball.radius;
 	}
 
 	ball_renderer.update_ball_positions(ball_positions);
@@ -263,18 +263,27 @@ bool BilliardsGame::is_player_turn() const
 
 bool BilliardsGame::handle_collision(Ball & ball)
 {
+	BilliardsTable::TableEdge table_collision = table.collides(ball);
+	if (table_collision != BilliardsTable::TableEdge::NAUGHT) {
+		if (table_collision == BilliardsTable::TableEdge::TOP) {
+			ball.set_velocity(glm::reflect(ball.get_velocity(), glm::vec2(0.0f, -1.0f)));
+		} else if (table_collision == BilliardsTable::TableEdge::LEFT) {
+			ball.set_velocity(glm::reflect(ball.get_velocity(), glm::vec2(1.0f, 0.0f)));
+		} else if (table_collision == BilliardsTable::TableEdge::BOTTOM) {
+			ball.set_velocity(glm::reflect(ball.get_velocity(), glm::vec2(0.0f, 1.0f)));
+		} else if (table_collision == BilliardsTable::TableEdge::RIGHT) {
+			ball.set_velocity(glm::reflect(ball.get_velocity(), glm::vec2(-1.0f, 0.0f)));
+		}
+		table.clamp_ball(ball);
+
+		return true;
+	}
 	return false;
 }
 
 bool BilliardsGame::collides(const Ball & ball1, const Ball & ball2) const
 {
 	return glm::distance(ball1.get_pos(), ball2.get_pos()) < Ball::width;
-}
-
-bool BilliardsGame::collides_with_table(const Ball & ball) const
-{
-	return ball.get_x() - ball.radius < 0.0f || ball.get_x() + ball.radius > TABLE_WIDTH
-		|| ball.get_y() - ball.radius < 0.0f || ball.get_y() + ball.radius > TABLE_HEIGHT;
 }
 
 void BilliardsGame::handle_input(SDL_Event & e)

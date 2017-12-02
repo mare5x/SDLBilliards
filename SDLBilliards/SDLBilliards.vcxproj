@@ -119,6 +119,7 @@
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="BallSpriteRenderer.cpp" />
     <ClCompile Include="BilliardsGame.cpp" />
+    <ClCompile Include="BilliardsTable.cpp" />
     <ClCompile Include="Cue.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
@@ -127,6 +128,7 @@
     <ClInclude Include="Ball.h" />
     <ClInclude Include="BallSpriteRenderer.h" />
     <ClInclude Include="BilliardsGame.h" />
+    <ClInclude Include="BilliardsTable.h" />
     <ClInclude Include="Cue.h" />
     <ClInclude Include="Shader.h" />
   </ItemGroup>

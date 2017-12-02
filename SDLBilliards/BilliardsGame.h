@@ -8,6 +8,7 @@
 #include "Ball.h"
 #include "BallSpriteRenderer.h"
 #include "Cue.h"
+#include "BilliardsTable.h"
 
 class BilliardsGame {
 public:
@@ -41,7 +42,6 @@ private:
 
 	bool handle_collision(Ball& ball);
 	bool collides(const Ball& ball1, const Ball& ball2) const;
-	bool collides_with_table(const Ball& ball) const;
 
 	void handle_input(SDL_Event &e);
 
@@ -50,6 +50,7 @@ private:
 	std::array<float, 16 * 2> ball_positions;  // (x, y) of balls in world space
 
 	Cue cue;
+	BilliardsTable table;
 
 	bool balls_moving;
 
