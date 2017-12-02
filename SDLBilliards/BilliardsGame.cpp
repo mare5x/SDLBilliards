@@ -3,11 +3,21 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 
+const float TABLE_WIDTH = 2.0f;  // meters
+const float TABLE_HEIGHT = 4.0f;  // meters
+
+const float dt = 0.01;  // fixed time step
+
+const float friction_coefficient = 0.025f; 
+const float friction_force = Ball::mass * 9.81f * friction_coefficient;
+const float friction_acceleration_scalar = friction_force / Ball::mass;
+
+
 BilliardsGame::BilliardsGame(int w, int h) :
-	balls{}, ball_positions{},
+	balls{}, ball_positions{}, cue(), balls_moving(false),
 	width(w), height(h), quit_requested(false),
 	sdl_event(), window(nullptr), gl_context(),
-	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, 2.0f, 4.0f, 0.0f, -1.0f, 1.0f)),
+	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, TABLE_WIDTH, TABLE_HEIGHT, 0.0f, -1.0f, 1.0f)),
 	ball_renderer()
 {
 	if (!init())
@@ -38,6 +48,15 @@ void BilliardsGame::input()
 
 void BilliardsGame::update()
 {
+	if (is_player_turn()) {
+
+	}
+	else {
+		update_balls();
+		update_ball_positions_vbo();
+
+		balls_moving = are_balls_moving();
+	}
 }
 
 void BilliardsGame::render()
@@ -116,8 +135,17 @@ bool BilliardsGame::init_gl()
 
 	ball_renderer.init(projection);
 
+	// Init ball ids
+	for (int i = 0; i < balls.size(); i++) {
+		balls[i].set_id(i);
+	}
+
 	reset_balls();
-	update_ball_positions();
+	update_ball_positions_vbo();
+
+	cue.set_force({ 1.0f, -50.0f });
+	apply_cue_force();
+	balls_moving = true;
 
 	return true;
 }
@@ -149,7 +177,7 @@ void BilliardsGame::render_balls()
 	ball_renderer.render_all();
 }
 
-void BilliardsGame::update_ball_positions()
+void BilliardsGame::update_ball_positions_vbo()
 {
 	for (int i = 0; i < balls.size(); i++) {
 		Ball &ball = balls[i];
@@ -165,7 +193,9 @@ void BilliardsGame::reset_balls()
 	// Set the positions to a triangular arrangement.
 	
 	// balls[0] is the white ball
-	balls[0].set_pos(1, 3.75f);
+	balls[0].set_pos(TABLE_WIDTH / 2.0f, TABLE_HEIGHT * 0.75f);
+
+	cue.set_pos(balls[0].get_x(), balls[0].get_y());
 
 	const float radius = Ball::radius;
 	const float width = Ball::width;
@@ -175,7 +205,7 @@ void BilliardsGame::reset_balls()
 	float y = 0.5f;
 	int ball_idx = 1;
 	for (int row = 5; row != 0; row--) {
-		float left_x = 1.0f - (row * width + (row - 1) * spacing) / 2.0f + radius;
+		float left_x = TABLE_WIDTH / 2.0f - (row * width + (row - 1) * spacing) / 2.0f + radius;
 		for (int col = 0; col < row; col++) {
 			balls[ball_idx].set_pos(left_x + col * spacing + col * width, y);
 			ball_idx++;
@@ -184,6 +214,79 @@ void BilliardsGame::reset_balls()
 	}
 }
 
+void BilliardsGame::update_balls()
+{
+	for (Ball& ball : balls) {
+		update_ball_position(ball);
+
+		handle_collision(ball);
+	}
+}
+
+void BilliardsGame::update_ball_position(Ball & ball)
+{
+	if (is_zero(ball.get_velocity()))
+		return;
+
+	glm::vec2 acceleration = friction_acceleration_scalar * -1 * ball.get_velocity_direction();
+
+	ball.translate_velocity(acceleration * dt);
+	ball.translate_pos(ball.get_velocity() * dt);
+
+	if (is_zero(ball.get_velocity(), 0.001f))
+		ball.set_velocity(glm::vec2(0.0f));
+}
+
+void BilliardsGame::apply_cue_force()
+{
+	Ball& ball = balls[0];
+
+	glm::vec2 acceleration = (cue.get_force() - friction_force) / ball.mass;
+
+	ball.set_velocity(acceleration * dt);
+	ball.translate_pos(ball.get_velocity() * dt);
+}
+
+bool BilliardsGame::are_balls_moving() const
+{
+	for (const Ball& ball : balls) {
+		if (!is_zero(ball.get_velocity()))
+			return true;
+	}
+	return false;
+}
+
+bool BilliardsGame::is_player_turn() const
+{
+	return !balls_moving;
+}
+
+bool BilliardsGame::handle_collision(Ball & ball)
+{
+	return false;
+}
+
+bool BilliardsGame::collides(const Ball & ball1, const Ball & ball2) const
+{
+	return glm::distance(ball1.get_pos(), ball2.get_pos()) < Ball::width;
+}
+
+bool BilliardsGame::collides_with_table(const Ball & ball) const
+{
+	return ball.get_x() - ball.radius < 0.0f || ball.get_x() + ball.radius > TABLE_WIDTH
+		|| ball.get_y() - ball.radius < 0.0f || ball.get_y() + ball.radius > TABLE_HEIGHT;
+}
+
 void BilliardsGame::handle_input(SDL_Event & e)
 {
+}
+
+bool is_zero(const glm::vec2 v)
+{
+	return v.x == 0 && v.y == 0;
+}
+
+bool is_zero(const glm::vec2 v, float epsilon)
+{
+	return abs(v.x) <= epsilon && abs(v.y) <= epsilon;
 }

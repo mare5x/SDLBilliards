@@ -7,6 +7,7 @@
 
 #include "Ball.h"
 #include "BallSpriteRenderer.h"
+#include "Cue.h"
 
 class BilliardsGame {
 public:
@@ -26,14 +27,31 @@ private:
 	void render_table();
 	void render_balls();
 
-	void update_ball_positions();
+	void update_ball_positions_vbo();
 	void reset_balls();
+
+	void update_balls();
+	void update_ball_position(Ball& ball);
+
+	// Call this when the cue is released to start moving ball 0. (Assumes all balls are stationary.)
+	void apply_cue_force();
+
+	bool are_balls_moving() const;
+	bool is_player_turn() const;
+
+	bool handle_collision(Ball& ball);
+	bool collides(const Ball& ball1, const Ball& ball2) const;
+	bool collides_with_table(const Ball& ball) const;
 
 	void handle_input(SDL_Event &e);
 
 	// Game variables
 	std::array<Ball, 16> balls;
 	std::array<float, 16 * 2> ball_positions;  // (x, y) of balls in world space
+
+	Cue cue;
+
+	bool balls_moving;
 
 	// Window variables
 	int width, height;
@@ -51,3 +69,6 @@ private:
 
 	BallSpriteRenderer ball_renderer;
 };
+
+bool is_zero(const glm::vec2 v);
+bool is_zero(const glm::vec2 v, float epsilon);
