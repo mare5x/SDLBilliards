@@ -55,6 +55,9 @@ private:
 
 	bool balls_moving;
 
+	float dt_accumulator;  // https://gafferongames.com/post/fix_your_timestep/  in seconds
+	unsigned int current_time;  // in milliseconds
+
 	// Window variables
 	int width, height;
 	bool quit_requested;

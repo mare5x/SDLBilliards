@@ -7,15 +7,16 @@
 const float TABLE_WIDTH = 2.0f;  // meters
 const float TABLE_HEIGHT = 4.0f;  // meters
 
-const float dt = 0.01;  // fixed time step
+const float dt = 0.01;  // fixed time step (seconds)
 
-const float friction_coefficient = 0.005f; 
+const float friction_coefficient = 0.0075f; 
 const float friction_force = Ball::mass * 9.81f * friction_coefficient;
 const float friction_acceleration_scalar = friction_force / Ball::mass;
 
 
 BilliardsGame::BilliardsGame(int w, int h) :
 	balls{}, ball_positions{}, ball_collisions_table{}, cue(), table(TABLE_WIDTH, TABLE_HEIGHT), balls_moving(false),
+		dt_accumulator(0), current_time(),
 	width(w), height(h), quit_requested(false),
 	sdl_event(), window(nullptr), gl_context(),
 	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, TABLE_WIDTH, TABLE_HEIGHT, 0.0f, -1.0f, 1.0f)),
@@ -27,9 +28,10 @@ BilliardsGame::BilliardsGame(int w, int h) :
 
 void BilliardsGame::run()
 {
+	current_time = SDL_GetTicks();
 	while (!quit_requested) {
 		input();
-
+	
 		update();
 
 		render();
@@ -53,7 +55,18 @@ void BilliardsGame::update()
 
 	}
 	else {
-		update_balls();
+		unsigned int time = SDL_GetTicks();
+		float delta = (time - current_time) / 1000.0f;
+		current_time = time;
+
+		dt_accumulator += delta;
+
+		while (dt_accumulator >= dt) {
+			update_balls();
+
+			dt_accumulator -= dt;
+		}
+
 		update_ball_positions_vbo();
 
 		balls_moving = are_balls_moving();
@@ -144,7 +157,7 @@ bool BilliardsGame::init_gl()
 	reset_balls();
 	update_ball_positions_vbo();
 
-	cue.set_force({ 0.0f, -150.0f });
+	cue.set_force({ 10.0f, -150.0f });
 	apply_cue_force();
 	balls_moving = true;
 
@@ -286,6 +299,7 @@ bool BilliardsGame::handle_collision(Ball & ball)
 		collision = true;
 	}
 
+	// if ball1 collides with ball2, calculate the collision only once instead of twice
 	std::vector<Ball*> ball_collisions;
 	for (Ball& ball2 : balls) {
 		if (ball2.get_id() == ball.get_id()) continue;
@@ -297,10 +311,15 @@ bool BilliardsGame::handle_collision(Ball & ball)
 	}
 
 	for (Ball* ball2 : ball_collisions) {
-		// https://en.wikipedia.org/wiki/Elastic_collision
-
 		glm::vec2 collision_dir = glm::normalize(ball2->get_pos() - ball.get_pos());
 
+		// if two balls collide, they can get stuck together so unstick them
+		float delta_collision_distance = (Ball::width - glm::length(ball2->get_pos() - ball.get_pos())) / 2.0f;
+		ball2->translate_pos(collision_dir * delta_collision_distance);
+		ball.translate_pos(-collision_dir * delta_collision_distance);
+
+		// https://en.wikipedia.org/wiki/Elastic_collision
+		// https://stackoverflow.com/questions/345838/ball-to-ball-collision-detection-and-handling
 		float u1 = glm::dot(ball.get_velocity(), collision_dir);
 		float u2 = glm::dot(ball2->get_velocity(), collision_dir);
 
