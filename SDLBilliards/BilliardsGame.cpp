@@ -3,7 +3,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 
-const int FPS = 60;
+const int FPS = 120;
 const float FPS_ms = 1 / static_cast<float>(FPS) * 1000;
 
 const float dt = 0.01;  // fixed time step (seconds)
@@ -167,7 +167,7 @@ bool BilliardsGame::init_gl()
 	reset_balls();
 	update_ball_positions_vbo();
 
-	cue.set_force({ 10.0f, -150.0f });
+	cue.set_force({ 1.0f, -150.0f });
 	apply_cue_force();
 	balls_moving = true;
 
