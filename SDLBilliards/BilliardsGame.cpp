@@ -3,11 +3,13 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include <vector>
 
+const int FPS = 60;
+const float FPS_ms = 1 / static_cast<float>(FPS) * 1000;
+
+const float dt = 0.01;  // fixed time step (seconds)
 
 const float TABLE_WIDTH = 2.0f;  // meters
 const float TABLE_HEIGHT = 4.0f;  // meters
-
-const float dt = 0.01;  // fixed time step (seconds)
 
 const float friction_coefficient = 0.0075f; 
 const float friction_force = Ball::mass * 9.81f * friction_coefficient;
@@ -30,11 +32,17 @@ void BilliardsGame::run()
 {
 	current_time = SDL_GetTicks();
 	while (!quit_requested) {
+		unsigned int start_time = SDL_GetTicks();
+
 		input();
 	
 		update();
 
 		render();
+
+		unsigned int frame_time = SDL_GetTicks() - start_time;
+		if (frame_time < FPS_ms)
+			SDL_Delay(FPS_ms - frame_time);
 	}
 }
 
@@ -108,6 +116,8 @@ bool BilliardsGame::init()
 			return false;
 
 		glViewport(0, 0, width, height);
+
+		SDL_GL_SetSwapInterval(0);  // uncap FPS
 
 		return init_gl();
 	}
