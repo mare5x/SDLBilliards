@@ -26,3 +26,8 @@ void Ball::translate_velocity(const glm::vec2 & dv)
 {
 	velocity += dv;
 }
+
+bool Ball::collides(const Ball & ball) const
+{
+	return glm::distance(get_pos(), ball.get_pos()) <= Ball::width;
+}

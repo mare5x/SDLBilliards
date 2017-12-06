@@ -41,13 +41,14 @@ private:
 	bool is_player_turn() const;
 
 	bool handle_collision(Ball& ball);
-	bool collides(const Ball& ball1, const Ball& ball2) const;
 
 	void handle_input(SDL_Event &e);
 
 	// Game variables
 	std::array<Ball, 16> balls;
 	std::array<float, 16 * 2> ball_positions;  // (x, y) of balls in world space
+
+	std::array<std::array<bool, 16>, 16> ball_collisions_table;  // true if collides
 
 	Cue cue;
 	BilliardsTable table;

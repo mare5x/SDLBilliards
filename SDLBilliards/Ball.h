@@ -30,11 +30,15 @@ public:
 	glm::vec2 get_velocity() const { return velocity; }
 	glm::vec2 get_acceleration() const { return acceleration; }
 
+	glm::vec2 get_momentum() const { return velocity * mass; }
+
 	// Returns the normalized direction vector of the velocity.
 	glm::vec2 get_velocity_direction() const { return glm::normalize(velocity); }
 
 	void set_velocity(glm::vec2 v) { velocity = v; }
 	void set_acceleration(glm::vec2 a) { acceleration = a; }
+
+	bool collides(const Ball& ball) const;
 
 	static const float radius;  // meters
 	static const float width;  // meters

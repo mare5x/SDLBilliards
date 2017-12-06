@@ -1,6 +1,7 @@
 #include "BilliardsGame.h"
 
 #include "glm/gtc/matrix_transform.hpp"
+#include <vector>
 
 
 const float TABLE_WIDTH = 2.0f;  // meters
@@ -14,7 +15,7 @@ const float friction_acceleration_scalar = friction_force / Ball::mass;
 
 
 BilliardsGame::BilliardsGame(int w, int h) :
-	balls{}, ball_positions{}, cue(), table(TABLE_WIDTH, TABLE_HEIGHT), balls_moving(false),
+	balls{}, ball_positions{}, ball_collisions_table{}, cue(), table(TABLE_WIDTH, TABLE_HEIGHT), balls_moving(false),
 	width(w), height(h), quit_requested(false),
 	sdl_event(), window(nullptr), gl_context(),
 	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, TABLE_WIDTH, TABLE_HEIGHT, 0.0f, -1.0f, 1.0f)),
@@ -143,7 +144,7 @@ bool BilliardsGame::init_gl()
 	reset_balls();
 	update_ball_positions_vbo();
 
-	cue.set_force({ 20.0f, -50.0f });
+	cue.set_force({ 0.0f, -150.0f });
 	apply_cue_force();
 	balls_moving = true;
 
@@ -218,7 +219,9 @@ void BilliardsGame::update_balls()
 {
 	for (Ball& ball : balls) {
 		update_ball_position(ball);
-
+	}
+	ball_collisions_table = {};
+	for (Ball& ball : balls) {
 		handle_collision(ball);
 	}
 }
@@ -263,6 +266,10 @@ bool BilliardsGame::is_player_turn() const
 
 bool BilliardsGame::handle_collision(Ball & ball)
 {
+	if (ball.get_x() == 0) return false;
+
+	bool collision = false;
+
 	BilliardsTable::TableEdge table_collision = table.collides(ball);
 	if (table_collision != BilliardsTable::TableEdge::NAUGHT) {
 		if (table_collision == BilliardsTable::TableEdge::TOP) {
@@ -276,14 +283,35 @@ bool BilliardsGame::handle_collision(Ball & ball)
 		}
 		table.clamp_ball(ball);
 
-		return true;
+		collision = true;
 	}
-	return false;
-}
 
-bool BilliardsGame::collides(const Ball & ball1, const Ball & ball2) const
-{
-	return glm::distance(ball1.get_pos(), ball2.get_pos()) < Ball::width;
+	std::vector<Ball*> ball_collisions;
+	for (Ball& ball2 : balls) {
+		if (ball2.get_id() == ball.get_id()) continue;
+		if (!ball_collisions_table[ball.get_id()][ball2.get_id()] && ball.collides(ball2)) {
+			ball_collisions_table[ball2.get_id()][ball.get_id()] = true;
+
+			ball_collisions.push_back(&ball2);
+		}
+	}
+
+	for (Ball* ball2 : ball_collisions) {
+		// https://en.wikipedia.org/wiki/Elastic_collision
+
+		glm::vec2 collision_dir = glm::normalize(ball2->get_pos() - ball.get_pos());
+
+		float u1 = glm::dot(ball.get_velocity(), collision_dir);
+		float u2 = glm::dot(ball2->get_velocity(), collision_dir);
+
+		float v1 = u2;
+		float v2 = u1;
+
+		ball.translate_velocity((v1 - u1) * collision_dir);
+		ball2->translate_velocity((v2 - u2) * collision_dir);
+	}
+
+	return collision;
 }
 
 void BilliardsGame::handle_input(SDL_Event & e)
