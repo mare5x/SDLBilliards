@@ -3,10 +3,7 @@
 
 class Cue {
 public:
-	Cue() : x{ 0 }, y{ 0 }, active{ false }, force { 0.0f } { }
-
-	bool is_active() const { return active; }
-	void set_active(bool val) { active = val; }
+	Cue() : x{ 0 }, y{ 0 }, visible{ true }, press_started{ false }, force { 0.0f }, press_timestamp{ 0 } { }
 
 	float get_x() const { return x; }
 	float get_y() const { return y; }
@@ -18,10 +15,18 @@ public:
 
 	const glm::vec2& get_force() const { return force; }
 	void set_force(glm::vec2 new_force) { force = new_force; }
+
+	void press_start(unsigned int time);
+	// Note: mouse_x and y must be in world coordinates!
+	void press_release(float mouse_x, float mouse_y, unsigned int time);
+
+	bool was_pressed() const { return press_started; }
 private:
 	float x, y;  // position of the tip of the stick (white ball position)
 
-	bool active;
-
 	glm::vec2 force;  // force vector
+
+	bool visible;
+	bool press_started;
+	unsigned int press_timestamp;  // timestamp of mouse press event (to calculate force)
 };

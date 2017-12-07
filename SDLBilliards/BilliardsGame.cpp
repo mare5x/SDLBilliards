@@ -60,7 +60,7 @@ void BilliardsGame::input()
 void BilliardsGame::update()
 {
 	if (is_player_turn()) {
-
+		current_time = SDL_GetTicks();
 	}
 	else {
 		unsigned int time = SDL_GetTicks();
@@ -167,10 +167,6 @@ bool BilliardsGame::init_gl()
 	reset_balls();
 	update_ball_positions_vbo();
 
-	cue.set_force({ 1.0f, -150.0f });
-	apply_cue_force();
-	balls_moving = true;
-
 	return true;
 }
 
@@ -242,6 +238,8 @@ void BilliardsGame::update_balls()
 {
 	for (Ball& ball : balls) {
 		update_ball_position(ball);
+		if (ball.get_id() == 0)
+			cue.set_pos(ball.get_x(), ball.get_y());
 	}
 	ball_collisions_table = {};
 	for (Ball& ball : balls) {
@@ -345,6 +343,20 @@ bool BilliardsGame::handle_collision(Ball & ball)
 
 void BilliardsGame::handle_input(SDL_Event & e)
 {
+	if (!is_player_turn())
+		return;
+
+	if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+		cue.press_start(e.button.timestamp);
+	} else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT) {
+		if (cue.was_pressed()) {
+			cue.press_release(e.button.x / static_cast<float>(width) * TABLE_WIDTH, 
+							  e.button.y / static_cast<float>(height) * TABLE_HEIGHT, 
+							  e.button.timestamp);
+			apply_cue_force();
+			balls_moving = true;
+		}
+	}
 }
 
 bool is_zero(const glm::vec2 v)

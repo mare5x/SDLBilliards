@@ -46,7 +46,7 @@ private:
 
 	// Game variables
 	std::array<Ball, 16> balls;
-	std::array<float, 16 * 2> ball_positions;  // (x, y) of balls in world space
+	std::array<float, 16 * 2> ball_positions;  // (x, y) of ball quads in world space
 
 	std::array<std::array<bool, 16>, 16> ball_collisions_table;  // true if collides
 
