@@ -6,7 +6,12 @@
 
 class Cue {
 public:
-	Cue() : x{ 0 }, y{ 0 }, visible{ true }, press_started{ false }, force{ 0.0f, 0.0f }, cue_direction{ 0.0f }, press_timestamp { 0 }, cue_renderer() { }
+	Cue() : x{ 0 }, y{ 0 },
+		visible{ true }, press_started{ false },
+		force{ 0.0f, 0.0f }, cue_direction{ 0.0f },
+		cue_render_offset{ 0.0f }, cue_render_angle(0),
+		press_start_time { 0 },
+		cue_renderer() { }
 
 	void init(const glm::mat4& projection) { cue_renderer.init(projection); }
 
@@ -30,18 +35,24 @@ public:
 	// Note: mouse_x and y must be in world coordinates!
 	void mouse_move(float mouse_x, float mouse_y);
 
+	void update(unsigned int time);
 	void render();
 
 	static const float width, height;  // meters
 private:
+	float calc_force(unsigned int time_held) const;
+	void update_force(float mouse_x, float mouse_y, unsigned int time_held);
+
 	float x, y;  // position of the tip of the stick (white ball position)
 
 	glm::vec2 force;  // force vector
 	glm::vec2 cue_direction;  // a normalized vector pointing from the mouse's position to the tip of the cue
+	glm::vec2 cue_render_offset;  // rendering offset to the tip of the stick coordinates
+	float cue_render_angle;
 
 	bool visible;
 	bool press_started;
-	unsigned int press_timestamp;  // timestamp of mouse press event (to calculate force)
+	unsigned int press_start_time;  // timestamp of mouse press event (to calculate force)
 
 	CueRenderer cue_renderer;
 };

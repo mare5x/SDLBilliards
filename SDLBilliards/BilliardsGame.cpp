@@ -62,6 +62,7 @@ void BilliardsGame::update()
 {
 	if (is_player_turn()) {
 		current_time = SDL_GetTicks();
+		cue.update(current_time);
 	}
 	else {
 		unsigned int time = SDL_GetTicks();
