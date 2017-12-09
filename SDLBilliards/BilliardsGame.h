@@ -74,6 +74,3 @@ private:
 
 	BallSpriteRenderer ball_renderer;
 };
-
-bool is_zero(const glm::vec2 v);
-bool is_zero(const glm::vec2 v, float epsilon);

@@ -36,6 +36,9 @@
     <ClCompile Include="BilliardsTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CueRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BilliardsGame.h">
@@ -56,6 +59,12 @@
     <ClInclude Include="BilliardsTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CueRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vector_tools.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\frag_shader.fs" />
@@ -64,5 +73,7 @@
     <None Include="Shaders\ball_frag.fs" />
     <None Include="Shaders\ball_vert.vs" />
     <None Include="Shaders\bg_vert.vs" />
+    <None Include="Shaders\cue_frag.fs" />
+    <None Include="Shaders\cue_vert.vs" />
   </ItemGroup>
 </Project>

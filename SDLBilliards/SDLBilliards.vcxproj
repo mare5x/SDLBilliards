@@ -121,6 +121,7 @@
     <ClCompile Include="BilliardsGame.cpp" />
     <ClCompile Include="BilliardsTable.cpp" />
     <ClCompile Include="Cue.cpp" />
+    <ClCompile Include="CueRenderer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -130,13 +131,17 @@
     <ClInclude Include="BilliardsGame.h" />
     <ClInclude Include="BilliardsTable.h" />
     <ClInclude Include="Cue.h" />
+    <ClInclude Include="CueRenderer.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="vector_tools.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ball_frag.fs" />
     <None Include="Shaders\ball_vert.vs" />
     <None Include="Shaders\bg_frag.fs" />
     <None Include="Shaders\bg_vert.vs" />
+    <None Include="Shaders\cue_frag.fs" />
+    <None Include="Shaders\cue_vert.vs" />
     <None Include="Shaders\frag_shader.fs" />
     <None Include="Shaders\vert_shader.vs" />
   </ItemGroup>

@@ -1,9 +1,14 @@
 #pragma once
 #include "glm\glm.hpp"
 
+#include "CueRenderer.h"
+
+
 class Cue {
 public:
-	Cue() : x{ 0 }, y{ 0 }, visible{ true }, press_started{ false }, force { 0.0f }, press_timestamp{ 0 } { }
+	Cue() : x{ 0 }, y{ 0 }, visible{ true }, press_started{ false }, force{ 0.0f, 0.0f }, cue_direction{ 0.0f }, press_timestamp { 0 }, cue_renderer() { }
+
+	void init(const glm::mat4& projection) { cue_renderer.init(projection); }
 
 	float get_x() const { return x; }
 	float get_y() const { return y; }
@@ -21,12 +26,22 @@ public:
 	void press_release(float mouse_x, float mouse_y, unsigned int time);
 
 	bool was_pressed() const { return press_started; }
+
+	// Note: mouse_x and y must be in world coordinates!
+	void mouse_move(float mouse_x, float mouse_y);
+
+	void render();
+
+	static const float width, height;  // meters
 private:
 	float x, y;  // position of the tip of the stick (white ball position)
 
 	glm::vec2 force;  // force vector
+	glm::vec2 cue_direction;  // a normalized vector pointing from the mouse's position to the tip of the cue
 
 	bool visible;
 	bool press_started;
 	unsigned int press_timestamp;  // timestamp of mouse press event (to calculate force)
+
+	CueRenderer cue_renderer;
 };

@@ -1,4 +1,5 @@
 #include "BilliardsGame.h"
+#include "vector_tools.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include <vector>
@@ -90,6 +91,9 @@ void BilliardsGame::render()
 
 	render_balls();
 
+	if (is_player_turn())
+		cue.render();
+
 	SDL_GL_SwapWindow(window);
 }
 
@@ -158,6 +162,8 @@ bool BilliardsGame::init_gl()
 	bg_shader = Shader("Shaders/bg_vert.vs", "Shaders/bg_frag.fs");
 
 	ball_renderer.init(projection);
+
+	cue.init(projection);
 
 	// Init ball ids
 	for (int i = 0; i < balls.size(); i++) {
@@ -356,15 +362,8 @@ void BilliardsGame::handle_input(SDL_Event & e)
 			apply_cue_force();
 			balls_moving = true;
 		}
+	} else if (e.type == SDL_MOUSEMOTION) {
+		cue.mouse_move(e.motion.x / static_cast<float>(width) * TABLE_WIDTH,
+					   e.button.y / static_cast<float>(height) * TABLE_HEIGHT);
 	}
-}
-
-bool is_zero(const glm::vec2 v)
-{
-	return v.x == 0 && v.y == 0;
-}
-
-bool is_zero(const glm::vec2 v, float epsilon)
-{
-	return abs(v.x) <= epsilon && abs(v.y) <= epsilon;
 }
