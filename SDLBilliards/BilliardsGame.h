@@ -25,7 +25,6 @@ private:
 	bool init_gl();
 	void quit();
 
-	void render_table();
 	void render_balls();
 
 	void update_ball_positions_vbo();
@@ -68,8 +67,6 @@ private:
 	SDL_GLContext gl_context;
 
 	// OpenGL stuff
-	GLuint vao, vbo;
-	Shader bg_shader;
 	glm::mat4 projection;  // orthographic projection matrix
 
 	BallSpriteRenderer ball_renderer;

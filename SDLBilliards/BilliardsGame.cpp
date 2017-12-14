@@ -22,7 +22,7 @@ BilliardsGame::BilliardsGame(int w, int h) :
 		dt_accumulator(0), current_time(),
 	width(w), height(h), quit_requested(false),
 	sdl_event(), window(nullptr), gl_context(),
-	vao(0), vbo(0), bg_shader(), projection(glm::ortho(0.0f, TABLE_WIDTH, TABLE_HEIGHT, 0.0f, -1.0f, 1.0f)),
+	projection(glm::ortho(0.0f, TABLE_WIDTH, TABLE_HEIGHT, 0.0f, -1.0f, 1.0f)),
 	ball_renderer()
 {
 	if (!init())
@@ -80,6 +80,14 @@ void BilliardsGame::update()
 		update_ball_positions_vbo();
 
 		balls_moving = are_balls_moving();
+
+		if (!balls_moving) {
+			cue.set_pos(balls[0].get_x(), balls[0].get_y());
+			int mouse_x, mouse_y;
+			SDL_GetMouseState(&mouse_x, &mouse_y);
+			cue.mouse_move(mouse_x / static_cast<float>(width) * TABLE_WIDTH, 
+						   mouse_y / static_cast<float>(height) * TABLE_HEIGHT);
+		}
 	}
 }
 
@@ -88,7 +96,7 @@ void BilliardsGame::render()
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	render_table();
+	table.render();
 
 	render_balls();
 
@@ -134,33 +142,7 @@ bool BilliardsGame::init()
 
 bool BilliardsGame::init_gl()
 {
-	float bg_quad[] = {
-		// pos (x, y)			
-		-1.0f, 1.0f,
-		-1.0f, -1.0f,
-		1.0f, -1.0f,
-
-		-1.0f, 1.0f,
-		1.0f, -1.0f,
-		1.0f, 1.0f
-	};
-
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-
-	glBindVertexArray(vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(bg_quad), bg_quad, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(0));
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glBindVertexArray(0);
-
-	bg_shader = Shader("Shaders/bg_vert.vs", "Shaders/bg_frag.fs");
+	table.init(projection);
 
 	ball_renderer.init(projection);
 
@@ -179,24 +161,12 @@ bool BilliardsGame::init_gl()
 
 void BilliardsGame::quit()
 {
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vbo);
-
 	SDL_GL_DeleteContext(gl_context);
 	gl_context = nullptr;
 	SDL_DestroyWindow(window);
 	window = nullptr;
 
 	SDL_Quit();
-}
-
-void BilliardsGame::render_table()
-{
-	bg_shader.use();
-
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
 }
 
 void BilliardsGame::render_balls()
@@ -245,8 +215,6 @@ void BilliardsGame::update_balls()
 {
 	for (Ball& ball : balls) {
 		update_ball_position(ball);
-		if (ball.get_id() == 0)
-			cue.set_pos(ball.get_x(), ball.get_y());
 	}
 	ball_collisions_table = {};
 	for (Ball& ball : balls) {
@@ -297,6 +265,11 @@ bool BilliardsGame::handle_collision(Ball & ball)
 	if (ball.get_x() == 0) return false;
 
 	bool collision = false;
+
+	if (table.in_pocket(ball)) {
+		ball.set_velocity({ 0.0f, 0.0f });
+		return true;
+	}
 
 	BilliardsTable::TableEdge table_collision = table.collides(ball);
 	if (table_collision != BilliardsTable::TableEdge::NAUGHT) {

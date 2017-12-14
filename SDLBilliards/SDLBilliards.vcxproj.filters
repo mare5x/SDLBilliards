@@ -69,11 +69,11 @@
   <ItemGroup>
     <None Include="Shaders\frag_shader.fs" />
     <None Include="Shaders\vert_shader.vs" />
-    <None Include="Shaders\bg_frag.fs" />
     <None Include="Shaders\ball_frag.fs" />
     <None Include="Shaders\ball_vert.vs" />
-    <None Include="Shaders\bg_vert.vs" />
     <None Include="Shaders\cue_frag.fs" />
     <None Include="Shaders\cue_vert.vs" />
+    <None Include="Shaders\table_frag.fs" />
+    <None Include="Shaders\table_vert.vs" />
   </ItemGroup>
 </Project>
