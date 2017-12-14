@@ -60,6 +60,11 @@ void BilliardsGame::input()
 
 void BilliardsGame::update()
 {
+	if (is_game_over()) {
+		SDL_Log("GAME OVER!");
+		return;
+	}
+
 	if (is_player_turn()) {
 		current_time = SDL_GetTicks();
 		cue.update(current_time);
@@ -77,17 +82,22 @@ void BilliardsGame::update()
 			dt_accumulator -= dt;
 		}
 
-		update_ball_positions_vbo();
-
 		balls_moving = are_balls_moving();
 
 		if (!balls_moving) {
+			if (balls[0].in_pocket) {
+				balls[0].in_pocket = false;
+				balls[0].set_pos(TABLE_WIDTH / 2.0f, TABLE_HEIGHT * 0.75f);
+			}
+
 			cue.set_pos(balls[0].get_x(), balls[0].get_y());
 			int mouse_x, mouse_y;
 			SDL_GetMouseState(&mouse_x, &mouse_y);
 			cue.mouse_move(mouse_x / static_cast<float>(width) * TABLE_WIDTH, 
 						   mouse_y / static_cast<float>(height) * TABLE_HEIGHT);
 		}
+
+		update_ball_positions_vbo();
 	}
 }
 
@@ -209,16 +219,21 @@ void BilliardsGame::reset_balls()
 		}
 		y += width + spacing;
 	}
+
+	for (Ball& ball : balls)
+		ball.in_pocket = false;
 }
 
 void BilliardsGame::update_balls()
 {
 	for (Ball& ball : balls) {
-		update_ball_position(ball);
+		if (!ball.in_pocket)
+			update_ball_position(ball);
 	}
 	ball_collisions_table = {};
 	for (Ball& ball : balls) {
-		handle_collision(ball);
+		if (!ball.in_pocket)
+			handle_collision(ball);
 	}
 }
 
@@ -260,14 +275,22 @@ bool BilliardsGame::is_player_turn() const
 	return !balls_moving;
 }
 
+bool BilliardsGame::is_game_over() const
+{
+	int in_pocket = 0;
+	for (int i = 1; i < balls.size(); i++) {
+		if (balls[i].in_pocket) in_pocket++;
+	}
+	return in_pocket == balls.size() - 1;
+}
+
 bool BilliardsGame::handle_collision(Ball & ball)
 {
-	if (ball.get_x() == 0) return false;
-
 	bool collision = false;
 
 	if (table.in_pocket(ball)) {
 		ball.set_velocity({ 0.0f, 0.0f });
+		ball.in_pocket = true;
 		return true;
 	}
 
@@ -290,7 +313,7 @@ bool BilliardsGame::handle_collision(Ball & ball)
 	// if ball1 collides with ball2, calculate the collision only once instead of twice
 	std::vector<Ball*> ball_collisions;
 	for (Ball& ball2 : balls) {
-		if (ball2.get_id() == ball.get_id()) continue;
+		if (ball2.get_id() == ball.get_id() || ball2.in_pocket) continue;  // ignore balls in pockets
 		if (!ball_collisions_table[ball.get_id()][ball2.get_id()] && ball.collides(ball2)) {
 			ball_collisions_table[ball2.get_id()][ball.get_id()] = true;
 

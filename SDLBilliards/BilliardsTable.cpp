@@ -98,6 +98,6 @@ bool BilliardsTable::in_pocket(const Ball & ball) const
 
 void BilliardsTable::clamp_ball(Ball & ball) const
 {
-	ball.set_x(std::min(width, std::max(ball.get_x(), 0.0f)));
-	ball.set_y(std::min(height, std::max(ball.get_y(), 0.0f)));
+	ball.set_x(std::min(width - ball.radius, std::max(ball.get_x(), ball.radius)));
+	ball.set_y(std::min(height - ball.radius, std::max(ball.get_y(), ball.radius)));
 }

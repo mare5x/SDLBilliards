@@ -39,6 +39,8 @@ private:
 	bool are_balls_moving() const;
 	bool is_player_turn() const;
 
+	bool is_game_over() const;
+
 	bool handle_collision(Ball& ball);
 
 	void handle_input(SDL_Event &e);

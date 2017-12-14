@@ -4,7 +4,7 @@
 
 class Ball {
 public:
-	Ball() : x(0), y(0), id(-1) {}
+	Ball() : x(0), y(0), id(-1), in_pocket(false) {}
 
 	void set_id(int v) { id = v; }
 	int get_id() const { return id; }
@@ -31,6 +31,8 @@ public:
 	glm::vec2 get_velocity_direction() const { return glm::normalize(velocity); }
 
 	bool collides(const Ball& ball) const;
+
+	bool in_pocket;
 
 	static const float radius;  // meters
 	static const float width;  // meters
