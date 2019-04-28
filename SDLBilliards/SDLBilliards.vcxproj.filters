@@ -21,9 +21,6 @@
     <ClCompile Include="BilliardsGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BallSpriteRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,6 +34,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CueRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\libs\cpp\glad\src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
